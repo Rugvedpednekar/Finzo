@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Finzo",
+    "slug": "finzo",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "finzo",
+    "userInterfaceStyle": "light",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-asset"
+    ]
+  }
+}
