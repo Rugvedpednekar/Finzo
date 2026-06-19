@@ -5,10 +5,16 @@ from app.database import Base, SessionLocal, engine
 from app.routes import auth, backtests, compare, dashboard, market, reports, sentiment
 from app.seed import seed_data
 
+# Create tables before starting the app
 Base.metadata.create_all(bind=engine)
 
-with SessionLocal() as db:
-    seed_data(db)
+# Seed demo data safely
+try:
+    with SessionLocal() as db:
+        seed_data(db)
+        print("Seed data created or already exists.")
+except Exception as e:
+    print(f"Seed data skipped due to error: {e}")
 
 app = FastAPI(
     title="Finzo API",
