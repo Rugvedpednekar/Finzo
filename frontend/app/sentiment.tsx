@@ -75,11 +75,15 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 8,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+    borderRadius: 16,
     borderWidth: 1,
     gap: 12,
-    padding: 16
+    padding: 18,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.22,
+    shadowRadius: 24
   },
   label: {
     color: colors.ink,
@@ -89,7 +93,7 @@ const styles = StyleSheet.create({
   textArea: {
     backgroundColor: colors.backgroundAlt,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: 14,
     borderWidth: 1,
     color: colors.ink,
     minHeight: 150,
@@ -98,14 +102,14 @@ const styles = StyleSheet.create({
   },
   result: {
     backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 8,
+    borderColor: "rgba(139, 92, 246, 0.35)",
+    borderRadius: 16,
     borderWidth: 1,
     gap: 8,
     padding: 16
   },
   resultLabel: {
-    color: colors.primaryDark,
+    color: "#C4B5FD",
     fontSize: 24,
     fontWeight: "900"
   },

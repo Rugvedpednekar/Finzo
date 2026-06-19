@@ -30,11 +30,15 @@ export function ResultCard({ result }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 8,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+    borderRadius: 16,
     borderWidth: 1,
     gap: 16,
-    padding: 16
+    padding: 16,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.2,
+    shadowRadius: 22
   },
   title: {
     color: colors.ink,

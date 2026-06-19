@@ -2,11 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, SessionLocal, engine
+from app.migrations import run_schema_migrations
 from app.routes import auth, backtests, compare, dashboard, market, reports, sentiment
 from app.seed import seed_data
 
 # Create tables before starting the app
 Base.metadata.create_all(bind=engine)
+run_schema_migrations(engine)
 
 # Seed demo data safely
 try:

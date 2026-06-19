@@ -87,11 +87,15 @@ const styles = StyleSheet.create({
   },
   form: {
     backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 8,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+    borderRadius: 16,
     borderWidth: 1,
     gap: 12,
-    padding: 16
+    padding: 18,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.22,
+    shadowRadius: 24
   },
   label: {
     color: colors.ink,
@@ -105,13 +109,17 @@ const styles = StyleSheet.create({
   },
   segment: {
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10
   },
   segmentActive: {
-    backgroundColor: colors.primary
+    backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12
   },
   segmentText: {
     color: colors.ink,

@@ -18,6 +18,7 @@ export function AuthForm({ mode, error, loading, onSubmit }: Props) {
 
   return (
     <View style={styles.card}>
+      <Text style={styles.brand}>FINZO</Text>
       <Text style={styles.title}>{mode === "login" ? "Welcome back" : "Create your account"}</Text>
       <Text style={styles.copy}>
         {mode === "login" ? "Sign in to your Finzo paper-trading workspace." : "Start tracking paper strategies with protected reports."}
@@ -37,18 +38,25 @@ export function AuthForm({ mode, error, loading, onSubmit }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 8,
+    backgroundColor: "rgba(15, 27, 45, 0.86)",
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 18,
     borderWidth: 1,
     gap: 14,
     maxWidth: 460,
-    padding: 20,
+    padding: 26,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 18 },
     shadowOpacity: 0.28,
     shadowRadius: 28,
     width: "100%"
+  },
+  brand: {
+    color: colors.cyan,
+    fontSize: 13,
+    fontWeight: "900",
+    letterSpacing: 1,
+    textTransform: "uppercase"
   },
   title: {
     color: colors.ink,

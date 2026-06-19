@@ -33,8 +33,9 @@ export function TradeTable({ trades }: Props) {
 
 const styles = StyleSheet.create({
   table: {
-    borderColor: colors.border,
-    borderRadius: 8,
+    backgroundColor: colors.backgroundAlt,
+    borderColor: "rgba(255, 255, 255, 0.06)",
+    borderRadius: 14,
     borderWidth: 1,
     overflow: "hidden"
   },
@@ -46,11 +47,11 @@ const styles = StyleSheet.create({
     padding: 10
   },
   header: {
-    backgroundColor: colors.softBlue,
+    backgroundColor: "rgba(255, 255, 255, 0.04)",
     borderTopWidth: 0
   },
   headCell: {
-    color: colors.primaryDark,
+    color: colors.muted,
     flex: 1,
     fontSize: 12,
     fontWeight: "800"

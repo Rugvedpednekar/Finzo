@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   },
   scroll: {
     minHeight: "100%",
-    padding: 18
+    padding: 20
   },
   contentRow: {
     flexDirection: "row",
@@ -50,6 +50,7 @@ const styles = StyleSheet.create({
   },
   main: {
     flex: 1,
-    minWidth: 0
+    minWidth: 0,
+    paddingBottom: 28
   }
 });

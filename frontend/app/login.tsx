@@ -26,11 +26,18 @@ export default function LoginScreen() {
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <PageTransition>
-        <View style={styles.wrap}>
-          <AuthForm mode="login" loading={loading} error={error} onSubmit={submit} />
-          <Text style={styles.switchText}>
-            New to Finzo? <Link href="/register" style={styles.link}>Create an account</Link>
-          </Text>
+        <View style={styles.shell}>
+          <View style={styles.storyPanel}>
+            <Text style={styles.brand}>FINZO</Text>
+            <Text style={styles.storyTitle}>Master the markets. Zero risk.</Text>
+            <Text style={styles.storyCopy}>Access your paper-trading dashboard, sentiment lab, and saved reports from one secure workspace.</Text>
+          </View>
+          <View style={styles.wrap}>
+            <AuthForm mode="login" loading={loading} error={error} onSubmit={submit} />
+            <Text style={styles.switchText}>
+              New to Finzo? <Link href="/register" style={styles.link}>Create an account</Link>
+            </Text>
+          </View>
         </View>
       </PageTransition>
     </ScrollView>
@@ -49,6 +56,47 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 16,
     width: "100%"
+  },
+  shell: {
+    alignItems: "stretch",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 22,
+    justifyContent: "center",
+    width: "100%"
+  },
+  storyPanel: {
+    backgroundColor: "#090E18",
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    borderRadius: 18,
+    borderWidth: 1,
+    flexBasis: 360,
+    flexGrow: 1,
+    justifyContent: "center",
+    maxWidth: 520,
+    minHeight: 360,
+    padding: 30
+  },
+  brand: {
+    color: colors.cyan,
+    fontSize: 14,
+    fontWeight: "900",
+    letterSpacing: 1,
+    marginBottom: 16
+  },
+  storyTitle: {
+    color: colors.ink,
+    fontSize: 38,
+    fontWeight: "900",
+    lineHeight: 44,
+    maxWidth: 360
+  },
+  storyCopy: {
+    color: colors.muted,
+    fontSize: 16,
+    lineHeight: 24,
+    marginTop: 16,
+    maxWidth: 410
   },
   switchText: {
     color: colors.muted

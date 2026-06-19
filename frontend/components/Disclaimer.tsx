@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
   box: {
     backgroundColor: "rgba(242, 201, 76, 0.1)",
     borderColor: "rgba(242, 201, 76, 0.35)",
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     padding: 12
   },

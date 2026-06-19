@@ -51,14 +51,17 @@ const styles = StyleSheet.create({
     padding: 20
   },
   hero: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+    backgroundColor: "#090E18",
+    borderColor: "rgba(255, 255, 255, 0.08)",
     borderRadius: 8,
     borderWidth: 1,
+    alignItems: "center",
     gap: 16,
+    justifyContent: "center",
     marginBottom: 16,
+    minHeight: 520,
     overflow: "hidden",
-    padding: 28,
+    padding: 36,
     position: "relative"
   },
   glowOne: {
@@ -87,19 +90,22 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.ink,
-    fontSize: 54,
-    fontWeight: "900"
+    fontSize: 62,
+    fontWeight: "900",
+    textAlign: "center"
   },
   copy: {
     color: colors.muted,
     fontSize: 18,
     lineHeight: 27,
-    maxWidth: 760
+    maxWidth: 760,
+    textAlign: "center"
   },
   actions: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12
+    gap: 12,
+    justifyContent: "center"
   },
   featureGrid: {
     flexDirection: "row",
@@ -108,9 +114,9 @@ const styles = StyleSheet.create({
     marginTop: 16
   },
   feature: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 8,
+    backgroundColor: "#090E18",
+    borderColor: "rgba(255, 255, 255, 0.08)",
+    borderRadius: 16,
     borderWidth: 1,
     flexBasis: 180,
     flexGrow: 1,

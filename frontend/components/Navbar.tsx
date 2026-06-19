@@ -17,9 +17,13 @@ export function Navbar({ user }: Props) {
   return (
     <View style={styles.nav}>
       <Link href="/dashboard" style={styles.brand}>
-        Finzo
+        FINZO
       </Link>
       <View style={styles.right}>
+        <View style={styles.search}>
+          <Text style={styles.searchText}>Search ticker...</Text>
+        </View>
+        <Text style={styles.bell}>Alert</Text>
         <Text style={styles.user}>{user.name}</Text>
         <Pressable onPress={logout} style={styles.logout}>
           <Text style={styles.logoutText}>Logout</Text>
@@ -43,7 +47,8 @@ const styles = StyleSheet.create({
   brand: {
     color: colors.ink,
     fontSize: 22,
-    fontWeight: "900"
+    fontWeight: "900",
+    letterSpacing: 0.5
   },
   right: {
     alignItems: "center",
@@ -54,6 +59,24 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 13,
     fontWeight: "700"
+  },
+  search: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 8
+  },
+  searchText: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "700"
+  },
+  bell: {
+    color: colors.cyan,
+    fontSize: 12,
+    fontWeight: "900"
   },
   logout: {
     borderColor: colors.border,
