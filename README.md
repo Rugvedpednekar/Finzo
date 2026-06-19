@@ -1,17 +1,31 @@
 # Finzo
 
-Finzo is an AI-powered paper-trading and backtesting sandbox for learning how technical indicators and financial sentiment can affect a simulated strategy.
+Finzo is a polished AI-powered paper-trading and backtesting sandbox for learning how technical indicators and financial sentiment can affect a simulated strategy.
 
-Finzo is for educational paper trading only and does not provide financial advice. It does not execute real trades, connect to brokerages, or use paid market-data APIs.
+Finzo is for educational paper trading only and does not provide financial advice. It does not execute real trades or connect to brokerages.
 
 ## Tech Stack
 
 - Frontend: Expo React Native, TypeScript, Expo Router
 - Backend: FastAPI, SQLAlchemy, Pydantic
+- Auth: JWT bearer tokens with `python-jose` and hashed passwords with Passlib
 - Local database: SQLite fallback
 - Production-ready database target: Amazon Aurora PostgreSQL
 - Historical data: Yahoo Finance through `yfinance`, with generated mock candle fallback
 - Live data: Finnhub quotes, with cached/mock price fallback when the API key is missing or unavailable
+
+## Environment Variables
+
+```env
+DATABASE_URL=
+EXPO_PUBLIC_API_URL=http://localhost:8000
+FINNHUB_API_KEY=
+JWT_SECRET=change-me
+ENVIRONMENT=development
+USE_MOCK_MARKET_DATA=true
+```
+
+Keep `DATABASE_URL`, `FINNHUB_API_KEY`, and `JWT_SECRET` only on the backend host, such as Railway. The frontend should only receive `EXPO_PUBLIC_API_URL`.
 
 ## Folder Structure
 
@@ -64,9 +78,29 @@ npm run ios
 
 Set `EXPO_PUBLIC_API_URL` if your backend is not running at `http://localhost:8000`.
 
+## Authentication Flow
+
+- New users call `POST /auth/register` with name, email, and password.
+- Existing users call `POST /auth/login` with email and password.
+- Passwords are stored as hashes, never plain text.
+- The API returns a JWT with `user_id`, `email`, and a 7-day expiration.
+- The frontend stores the JWT in `localStorage` on web, with an in-memory React Native fallback.
+- On app load, the frontend calls `/auth/me`. Failed validation clears the token and returns to Login.
+- Protected API requests include `Authorization: Bearer TOKEN`.
+
+Demo seeded login:
+
+```text
+Email: demo@finzo.app
+Password: demo-password
+```
+
 ## API Endpoints
 
 - `GET /health`
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /auth/me`
 - `GET /dashboard`
 - `POST /backtests/run`
 - `GET /backtests`
@@ -80,7 +114,7 @@ Set `EXPO_PUBLIC_API_URL` if your backend is not running at `http://localhost:80
 
 ## Database Setup
 
-For local development, leave `DATABASE_URL` empty and the backend will create `finzo.db` with SQLite.
+For local development, leave `DATABASE_URL` empty and the backend will create `backend/finzo.db` with SQLite.
 
 For Amazon Aurora PostgreSQL, set `DATABASE_URL`:
 
@@ -98,10 +132,32 @@ Historical OHLCV candles for backtesting are fetched server-side from Yahoo Fina
 
 Live/latest quote data is fetched server-side from Finnhub using `FINNHUB_API_KEY`. The key is never exposed to the frontend. The REST quote endpoint is implemented first, and the optional watchlist WebSocket relays Finnhub WebSocket updates from the backend when configured. If the key is missing or Finnhub fails, Finzo returns cached or mock live prices.
 
+## Deployment Notes
+
+Vercel frontend:
+
+- Deploy from `frontend/`.
+- Use `frontend/vercel.json`.
+- Set `EXPO_PUBLIC_API_URL` to the Railway backend URL.
+- Do not add backend secrets to Vercel.
+
+Railway backend:
+
+- Deploy from `backend/`.
+- Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+- Set `DATABASE_URL`, `JWT_SECRET`, `FINNHUB_API_KEY`, `ENVIRONMENT`, and optional `USE_MOCK_MARKET_DATA`.
+
+Aurora PostgreSQL:
+
+- Use a PostgreSQL SQLAlchemy URL in `DATABASE_URL`.
+- The MVP uses `SQLAlchemy create_all` for simple schema creation.
+- In production, move to Alembic migrations before changing live schemas.
+
 ## Hackathon Submission Notes
 
-- Works locally without paid APIs.
+- Works locally with SQLite and mock market-data fallbacks.
 - Includes seeded dashboard, reports, and strategy examples.
+- Includes JWT auth with login/register and protected product routes.
 - Uses mock historical prices for deterministic paper-trading demos.
 - Includes a rule-based sentiment analyzer and sentiment-adjusted comparison flow.
 - Clearly separates frontend and backend responsibilities.

@@ -1,5 +1,18 @@
 export type StrategyType = "SMA crossover" | "RSI strategy" | "MACD strategy";
 
+export type User = {
+  id: number;
+  name: string;
+  email: string;
+  created_at: string;
+};
+
+export type AuthResponse = {
+  access_token: string;
+  token_type: "bearer";
+  user: User;
+};
+
 export type Trade = {
   id?: number;
   date: string;

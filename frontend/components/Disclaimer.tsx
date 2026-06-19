@@ -11,8 +11,8 @@ export function Disclaimer() {
 
 const styles = StyleSheet.create({
   box: {
-    backgroundColor: "#FFF8E6",
-    borderColor: "#F1D28A",
+    backgroundColor: "rgba(242, 201, 76, 0.1)",
+    borderColor: "rgba(242, 201, 76, 0.35)",
     borderRadius: 8,
     borderWidth: 1,
     padding: 12

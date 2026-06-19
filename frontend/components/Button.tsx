@@ -26,13 +26,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.primary,
     borderRadius: 8,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 22,
     paddingHorizontal: 18,
     paddingVertical: 12
   },
   secondary: {
-    backgroundColor: colors.softBlue,
+    backgroundColor: "rgba(47, 128, 255, 0.12)",
     borderColor: colors.border,
-    borderWidth: 1
+    borderWidth: 1,
+    shadowOpacity: 0
   },
   disabled: {
     opacity: 0.6
@@ -43,6 +48,6 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   secondaryText: {
-    color: colors.primaryDark
+    color: colors.cyan
   }
 });

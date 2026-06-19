@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/Button";
 import { Disclaimer } from "@/components/Disclaimer";
 import { Input } from "@/components/Input";
+import { LoadingSkeleton } from "@/components/LoadingSkeleton";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ResultCard } from "@/components/ResultCard";
 import { colors } from "@/constants/config";
 import { api } from "@/services/api";
@@ -40,37 +43,42 @@ export default function BacktestScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <Text style={styles.title}>Run Backtest</Text>
-      <Disclaimer />
-      <View style={styles.form}>
-        <Input label="Stock symbol" value={symbol} onChangeText={setSymbol} autoCapitalize="characters" />
-        <Text style={styles.label}>Strategy type</Text>
-        <View style={styles.segmentRow}>
-          {strategies.map((item) => (
-            <Pressable key={item} onPress={() => setStrategy(item)} style={[styles.segment, strategy === item && styles.segmentActive]}>
-              <Text style={[styles.segmentText, strategy === item && styles.segmentTextActive]}>{item}</Text>
-            </Pressable>
-          ))}
-        </View>
-        <Input label="Starting capital" value={capital} onChangeText={setCapital} keyboardType="numeric" />
-        <Input label="Start date" value={startDate} onChangeText={setStartDate} placeholder="YYYY-MM-DD" />
-        <Input label="End date" value={endDate} onChangeText={setEndDate} placeholder="YYYY-MM-DD" />
-        <Button title={loading ? "Running..." : "Run Backtest"} onPress={run} disabled={loading} />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-      </View>
-      {!result && !loading ? <Text style={styles.state}>Run a simulation to see paper-trading results here.</Text> : null}
-      {result ? <ResultCard result={result} /> : null}
-    </ScrollView>
+    <ProtectedRoute>
+      {(user) => (
+        <AppLayout user={user}>
+          <View style={styles.page}>
+            <Text style={styles.title}>Run Backtest</Text>
+            <Disclaimer />
+            <View style={styles.form}>
+              <Input label="Stock symbol" value={symbol} onChangeText={setSymbol} autoCapitalize="characters" />
+              <Text style={styles.label}>Strategy type</Text>
+              <View style={styles.segmentRow}>
+                {strategies.map((item) => (
+                  <Pressable key={item} onPress={() => setStrategy(item)} style={[styles.segment, strategy === item && styles.segmentActive]}>
+                    <Text style={[styles.segmentText, strategy === item && styles.segmentTextActive]}>{item}</Text>
+                  </Pressable>
+                ))}
+              </View>
+              <Input label="Starting capital" value={capital} onChangeText={setCapital} keyboardType="numeric" />
+              <Input label="Start date" value={startDate} onChangeText={setStartDate} placeholder="YYYY-MM-DD" />
+              <Input label="End date" value={endDate} onChangeText={setEndDate} placeholder="YYYY-MM-DD" />
+              <Button title={loading ? "Running..." : "Run Backtest"} onPress={run} disabled={loading} />
+              {error ? <Text style={styles.error}>{error}</Text> : null}
+            </View>
+            {loading ? <LoadingSkeleton rows={2} /> : null}
+            {!result && !loading ? <Text style={styles.state}>Run a simulation to see paper-trading results here.</Text> : null}
+            {result ? <ResultCard result={result} /> : null}
+          </View>
+        </AppLayout>
+      )}
+    </ProtectedRoute>
   );
 }
 
 const styles = StyleSheet.create({
   page: {
-    backgroundColor: colors.background,
     gap: 16,
-    minHeight: "100%",
-    padding: 20
+    width: "100%"
   },
   title: {
     color: colors.ink,

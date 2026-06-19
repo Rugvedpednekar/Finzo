@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.models import User
 from app.schemas import CompareRequest, CompareResponse
+from app.services.auth import get_current_user
 from app.services.backtest_engine import run_backtest
 from app.services.sentiment_engine import analyze_sentiment
 
@@ -8,7 +10,7 @@ router = APIRouter(prefix="/compare", tags=["compare"])
 
 
 @router.post("", response_model=CompareResponse)
-def compare_strategies(request: CompareRequest) -> CompareResponse:
+def compare_strategies(request: CompareRequest, _: User = Depends(get_current_user)) -> CompareResponse:
     sentiment = analyze_sentiment(request.sentiment_text or "Neutral market update.")
     technical = run_backtest(request)
     adjusted = run_backtest(request, sentiment_score=sentiment.score)

@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/Button";
 import { Disclaimer } from "@/components/Disclaimer";
 import { Input } from "@/components/Input";
+import { LoadingSkeleton } from "@/components/LoadingSkeleton";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ResultCard } from "@/components/ResultCard";
 import { colors } from "@/constants/config";
 import { api } from "@/services/api";
@@ -41,51 +44,56 @@ export default function CompareScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <Text style={styles.title}>Compare Results</Text>
-      <Disclaimer />
-      <View style={styles.form}>
-        <Input label="Stock symbol" value={symbol} onChangeText={setSymbol} autoCapitalize="characters" />
-        <Text style={styles.label}>Strategy type</Text>
-        <View style={styles.segmentRow}>
-          {strategies.map((item) => (
-            <Pressable key={item} onPress={() => setStrategy(item)} style={[styles.segment, strategy === item && styles.segmentActive]}>
-              <Text style={[styles.segmentText, strategy === item && styles.segmentTextActive]}>{item}</Text>
-            </Pressable>
-          ))}
-        </View>
-        <Input label="Starting capital" value={capital} onChangeText={setCapital} keyboardType="numeric" />
-        <Input label="Start date" value={startDate} onChangeText={setStartDate} />
-        <Input label="End date" value={endDate} onChangeText={setEndDate} />
-        <Text style={styles.label}>Sentiment text</Text>
-        <TextInput multiline value={sentimentText} onChangeText={setSentimentText} style={styles.textArea} />
-        <Button title={loading ? "Comparing..." : "Compare Strategies"} onPress={compare} disabled={loading} />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-      </View>
-      {!result && !loading ? <Text style={styles.state}>Compare a technical-only run with a sentiment-adjusted version.</Text> : null}
-      {result ? (
-        <View style={styles.results}>
-          <View style={styles.summary}>
-            <Text style={styles.summaryTitle}>Comparison Summary</Text>
-            <Text style={styles.summaryText}>{result.summary}</Text>
-            <Text style={styles.summaryText}>Sentiment: {result.sentiment.label} ({result.sentiment.score.toFixed(2)})</Text>
+    <ProtectedRoute>
+      {(user) => (
+        <AppLayout user={user}>
+          <View style={styles.page}>
+            <Text style={styles.title}>Compare Results</Text>
+            <Disclaimer />
+            <View style={styles.form}>
+              <Input label="Stock symbol" value={symbol} onChangeText={setSymbol} autoCapitalize="characters" />
+              <Text style={styles.label}>Strategy type</Text>
+              <View style={styles.segmentRow}>
+                {strategies.map((item) => (
+                  <Pressable key={item} onPress={() => setStrategy(item)} style={[styles.segment, strategy === item && styles.segmentActive]}>
+                    <Text style={[styles.segmentText, strategy === item && styles.segmentTextActive]}>{item}</Text>
+                  </Pressable>
+                ))}
+              </View>
+              <Input label="Starting capital" value={capital} onChangeText={setCapital} keyboardType="numeric" />
+              <Input label="Start date" value={startDate} onChangeText={setStartDate} />
+              <Input label="End date" value={endDate} onChangeText={setEndDate} />
+              <Text style={styles.label}>Sentiment text</Text>
+              <TextInput multiline value={sentimentText} onChangeText={setSentimentText} style={styles.textArea} />
+              <Button title={loading ? "Comparing..." : "Compare Strategies"} onPress={compare} disabled={loading} />
+              {error ? <Text style={styles.error}>{error}</Text> : null}
+            </View>
+            {loading ? <LoadingSkeleton rows={3} /> : null}
+            {!result && !loading ? <Text style={styles.state}>Compare a technical-only run with a sentiment-adjusted version.</Text> : null}
+            {result ? (
+              <View style={styles.results}>
+                <View style={styles.summary}>
+                  <Text style={styles.summaryTitle}>Comparison Summary</Text>
+                  <Text style={styles.summaryText}>{result.summary}</Text>
+                  <Text style={styles.summaryText}>Sentiment: {result.sentiment.label} ({result.sentiment.score.toFixed(2)})</Text>
+                </View>
+                <Text style={styles.sectionTitle}>Technical-only strategy</Text>
+                <ResultCard result={result.technical_only} />
+                <Text style={styles.sectionTitle}>Sentiment-adjusted strategy</Text>
+                <ResultCard result={result.sentiment_adjusted} />
+              </View>
+            ) : null}
           </View>
-          <Text style={styles.sectionTitle}>Technical-only strategy</Text>
-          <ResultCard result={result.technical_only} />
-          <Text style={styles.sectionTitle}>Sentiment-adjusted strategy</Text>
-          <ResultCard result={result.sentiment_adjusted} />
-        </View>
-      ) : null}
-    </ScrollView>
+        </AppLayout>
+      )}
+    </ProtectedRoute>
   );
 }
 
 const styles = StyleSheet.create({
   page: {
-    backgroundColor: colors.background,
     gap: 16,
-    minHeight: "100%",
-    padding: 20
+    width: "100%"
   },
   title: {
     color: colors.ink,
@@ -128,6 +136,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF"
   },
   textArea: {
+    backgroundColor: colors.backgroundAlt,
     borderColor: colors.border,
     borderRadius: 8,
     borderWidth: 1,

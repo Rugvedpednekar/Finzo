@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, selectinload
 
 from app.database import get_db
-from app.models import Backtest, Report, Trade
+from app.models import Backtest, Report, Trade, User
 from app.schemas import BacktestRead, BacktestRunRequest
+from app.services.auth import get_current_user
 from app.services.backtest_engine import run_backtest
 from app.services.report_generator import build_report_summary
 
@@ -44,18 +45,26 @@ def _save_backtest(db: Session, result: BacktestRead) -> Backtest:
 
 
 @router.post("/run", response_model=BacktestRead)
-def run_and_save_backtest(request: BacktestRunRequest, db: Session = Depends(get_db)) -> Backtest:
+def run_and_save_backtest(
+    request: BacktestRunRequest,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> Backtest:
     result = run_backtest(request)
     return _save_backtest(db, result)
 
 
 @router.get("", response_model=list[BacktestRead])
-def list_backtests(db: Session = Depends(get_db)) -> list[Backtest]:
+def list_backtests(db: Session = Depends(get_db), _: User = Depends(get_current_user)) -> list[Backtest]:
     return db.query(Backtest).options(selectinload(Backtest.trades)).order_by(Backtest.created_at.desc()).all()
 
 
 @router.get("/{backtest_id}", response_model=BacktestRead)
-def get_backtest(backtest_id: int, db: Session = Depends(get_db)) -> Backtest:
+def get_backtest(
+    backtest_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+) -> Backtest:
     backtest = db.query(Backtest).options(selectinload(Backtest.trades)).filter(Backtest.id == backtest_id).first()
     if not backtest:
         raise HTTPException(status_code=404, detail="Backtest not found")

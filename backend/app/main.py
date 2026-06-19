@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, SessionLocal, engine
-from app.routes import backtests, compare, dashboard, market, reports, sentiment
+from app.routes import auth, backtests, compare, dashboard, market, reports, sentiment
 from app.seed import seed_data
 
 Base.metadata.create_all(bind=engine)
@@ -25,6 +25,7 @@ app.add_middleware(
 )
 
 app.include_router(dashboard.router)
+app.include_router(auth.router)
 app.include_router(backtests.router)
 app.include_router(sentiment.router)
 app.include_router(compare.router)

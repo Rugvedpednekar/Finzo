@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.models import Backtest, Report, Strategy, Trade, User
 from app.schemas import BacktestRunRequest
 from app.services.backtest_engine import run_backtest
+from app.services.auth import hash_password
 from app.services.report_generator import build_report_summary
 
 
@@ -10,7 +11,7 @@ def seed_data(db: Session) -> None:
     if db.query(User).first():
         return
 
-    db.add(User(email="demo@finzo.local", name="Finzo Demo User"))
+    db.add(User(email="demo@finzo.app", name="Finzo Demo User", hashed_password=hash_password("demo-password")))
     db.add_all(
         [
             Strategy(name="SMA crossover", description="Buys when a short moving average crosses above a long moving average."),

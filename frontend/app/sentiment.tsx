@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
+import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/Button";
 import { Disclaimer } from "@/components/Disclaimer";
+import { LoadingSkeleton } from "@/components/LoadingSkeleton";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { colors } from "@/constants/config";
 import { api } from "@/services/api";
 import type { SentimentResult } from "@/types";
@@ -25,40 +28,45 @@ export default function SentimentScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <Text style={styles.title}>Sentiment Analyzer</Text>
-      <Disclaimer />
-      <View style={styles.card}>
-        <Text style={styles.label}>Financial news or earnings-call text</Text>
-        <TextInput
-          multiline
-          onChangeText={setText}
-          placeholder="Paste market text here..."
-          placeholderTextColor="#8B98AA"
-          style={styles.textArea}
-          value={text}
-        />
-        <Button title={loading ? "Analyzing..." : "Analyze Sentiment"} onPress={analyze} disabled={loading} />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-      </View>
-      {!result && !loading ? <Text style={styles.state}>Paste text and run analysis to see a label, score, and explanation.</Text> : null}
-      {result ? (
-        <View style={styles.result}>
-          <Text style={styles.resultLabel}>{result.label}</Text>
-          <Text style={styles.score}>Score: {result.score.toFixed(2)}</Text>
-          <Text style={styles.explanation}>{result.explanation}</Text>
-        </View>
-      ) : null}
-    </ScrollView>
+    <ProtectedRoute>
+      {(user) => (
+        <AppLayout user={user}>
+          <View style={styles.page}>
+            <Text style={styles.title}>Sentiment Analyzer</Text>
+            <Disclaimer />
+            <View style={styles.card}>
+              <Text style={styles.label}>Financial news or earnings-call text</Text>
+              <TextInput
+                multiline
+                onChangeText={setText}
+                placeholder="Paste market text here..."
+                placeholderTextColor="#8B98AA"
+                style={styles.textArea}
+                value={text}
+              />
+              <Button title={loading ? "Analyzing..." : "Analyze Sentiment"} onPress={analyze} disabled={loading} />
+              {error ? <Text style={styles.error}>{error}</Text> : null}
+            </View>
+            {loading ? <LoadingSkeleton rows={2} /> : null}
+            {!result && !loading ? <Text style={styles.state}>Paste text and run analysis to see a label, score, and explanation.</Text> : null}
+            {result ? (
+              <View style={styles.result}>
+                <Text style={styles.resultLabel}>{result.label}</Text>
+                <Text style={styles.score}>Score: {result.score.toFixed(2)}</Text>
+                <Text style={styles.explanation}>{result.explanation}</Text>
+              </View>
+            ) : null}
+          </View>
+        </AppLayout>
+      )}
+    </ProtectedRoute>
   );
 }
 
 const styles = StyleSheet.create({
   page: {
-    backgroundColor: colors.background,
     gap: 16,
-    minHeight: "100%",
-    padding: 20
+    width: "100%"
   },
   title: {
     color: colors.ink,
@@ -79,6 +87,7 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   textArea: {
+    backgroundColor: colors.backgroundAlt,
     borderColor: colors.border,
     borderRadius: 8,
     borderWidth: 1,

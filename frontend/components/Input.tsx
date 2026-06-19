@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.backgroundAlt,
     borderColor: colors.border,
     borderRadius: 8,
     borderWidth: 1,

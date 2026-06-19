@@ -3,14 +3,15 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Backtest
+from app.models import Backtest, User
 from app.schemas import DashboardResponse
+from app.services.auth import get_current_user
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 @router.get("", response_model=DashboardResponse)
-def get_dashboard(db: Session = Depends(get_db)) -> DashboardResponse:
+def get_dashboard(db: Session = Depends(get_db), _: User = Depends(get_current_user)) -> DashboardResponse:
     total = db.query(Backtest).count()
     best_return = db.query(func.max(Backtest.total_return)).scalar() or 0.0
     average_win_rate = db.query(func.avg(Backtest.win_rate)).scalar() or 0.0
