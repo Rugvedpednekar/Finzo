@@ -1,103 +1,60 @@
 import { Link, router } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { AuthForm } from "@/components/AuthForm";
-import { PageTransition } from "@/components/PageTransition";
+import { StyleSheet, Text } from "react-native";
+import { AuthButton, AuthCard } from "@/components/auth/AuthCard";
+import { AuthInput } from "@/components/auth/AuthInput";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 import { colors } from "@/constants/config";
 import { api } from "@/services/api";
 
 export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const submit = async (values: { name: string; email: string; password: string }) => {
+  const submit = async () => {
     setLoading(true);
     setError("");
     try {
-      await api.register(values);
+      await api.register({ name, email, password });
       router.replace("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      const message = err instanceof Error ? err.message : "Registration failed";
+      setError(message === "Failed to fetch" ? "Could not reach the Finzo API. Check your backend URL and try again." : message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <PageTransition>
-        <View style={styles.shell}>
-          <View style={styles.storyPanel}>
-            <Text style={styles.brand}>FINZO</Text>
-            <Text style={styles.storyTitle}>Build conviction before capital.</Text>
-            <Text style={styles.storyCopy}>Create a protected sandbox for backtests, AI sentiment checks, and strategy reports.</Text>
-          </View>
-          <View style={styles.wrap}>
-            <AuthForm mode="register" loading={loading} error={error} onSubmit={submit} />
-            <Text style={styles.switchText}>
-              Already have an account? <Link href="/login" style={styles.link}>Login</Link>
-            </Text>
-          </View>
-        </View>
-      </PageTransition>
-    </ScrollView>
+    <AuthLayout mode="register">
+      <AuthCard
+        title="Create an account"
+        subtitle="Start backtesting strategies and saving paper-trading reports."
+        error={error}
+        footer={<Text style={styles.switchText}>Already have an account? <Link href="/login" style={styles.link}>Login</Link></Text>}
+      >
+        <AuthInput label="Full name" value={name} onChangeText={setName} autoCapitalize="words" placeholder="Jane Trader" />
+        <AuthInput label="Email address" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholder="you@example.com" />
+        <AuthInput
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          secure={!showPassword}
+          showToggle
+          onToggleSecure={() => setShowPassword((value) => !value)}
+          placeholder="At least 8 characters"
+        />
+        <AuthButton title="Register" loading={loading} onPress={submit} />
+      </AuthCard>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
-    alignItems: "center",
-    backgroundColor: colors.background,
-    justifyContent: "center",
-    minHeight: "100%",
-    padding: 20
-  },
-  wrap: {
-    alignItems: "center",
-    gap: 16,
-    width: "100%"
-  },
-  shell: {
-    alignItems: "stretch",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 22,
-    justifyContent: "center",
-    width: "100%"
-  },
-  storyPanel: {
-    backgroundColor: "#090E18",
-    borderColor: "rgba(255, 255, 255, 0.08)",
-    borderRadius: 18,
-    borderWidth: 1,
-    flexBasis: 360,
-    flexGrow: 1,
-    justifyContent: "center",
-    maxWidth: 520,
-    minHeight: 360,
-    padding: 30
-  },
-  brand: {
-    color: colors.cyan,
-    fontSize: 14,
-    fontWeight: "900",
-    letterSpacing: 1,
-    marginBottom: 16
-  },
-  storyTitle: {
-    color: colors.ink,
-    fontSize: 38,
-    fontWeight: "900",
-    lineHeight: 44,
-    maxWidth: 360
-  },
-  storyCopy: {
-    color: colors.muted,
-    fontSize: 16,
-    lineHeight: 24,
-    marginTop: 16,
-    maxWidth: 410
-  },
   switchText: {
     color: colors.muted
   },

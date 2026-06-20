@@ -65,7 +65,14 @@ async function request<T>(path: string, options?: RequestInit & { auth?: boolean
 
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(message || `Request failed with ${response.status}`);
+    let detail = "";
+    try {
+      const parsed = JSON.parse(message);
+      detail = Array.isArray(parsed.detail) ? parsed.detail[0]?.msg : parsed.detail;
+    } catch {
+      detail = "";
+    }
+    throw new Error(detail || message || `Request failed with ${response.status}`);
   }
   return response.json() as Promise<T>;
 }

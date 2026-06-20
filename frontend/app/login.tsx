@@ -1,108 +1,77 @@
 import { Link, router } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { AuthForm } from "@/components/AuthForm";
-import { PageTransition } from "@/components/PageTransition";
+import { Pressable, StyleSheet, Text } from "react-native";
+import { AuthButton, AuthCard } from "@/components/auth/AuthCard";
+import { AuthInput } from "@/components/auth/AuthInput";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 import { colors } from "@/constants/config";
 import { api } from "@/services/api";
 
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [email, setEmail] = useState("demo@finzo.app");
+  const [password, setPassword] = useState("demo-password");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const submit = async (values: { email: string; password: string }) => {
+  const submit = async () => {
     setLoading(true);
     setError("");
     try {
-      await api.login({ email: values.email, password: values.password });
+      await api.login({ email, password });
       router.replace("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      const message = err instanceof Error ? err.message : "Login failed";
+      setError(message === "Failed to fetch" ? "Could not reach the Finzo API. Check your backend URL and try again." : message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <PageTransition>
-        <View style={styles.shell}>
-          <View style={styles.storyPanel}>
-            <Text style={styles.brand}>FINZO</Text>
-            <Text style={styles.storyTitle}>Master the markets. Zero risk.</Text>
-            <Text style={styles.storyCopy}>Access your paper-trading dashboard, sentiment lab, and saved reports from one secure workspace.</Text>
-          </View>
-          <View style={styles.wrap}>
-            <AuthForm mode="login" loading={loading} error={error} onSubmit={submit} />
-            <Text style={styles.switchText}>
-              New to Finzo? <Link href="/register" style={styles.link}>Create an account</Link>
-            </Text>
-          </View>
-        </View>
-      </PageTransition>
-    </ScrollView>
+    <AuthLayout mode="login">
+      <AuthCard
+        title="Welcome back"
+        subtitle="Enter your details to access your trading sandbox."
+        error={error}
+        footer={<Text style={styles.switchText}>New to Finzo? <Link href="/register" style={styles.link}>Create an account</Link></Text>}
+      >
+        <AuthInput label="Email address" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+        <AuthInput
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          secure={!showPassword}
+          showToggle
+          onToggleSecure={() => setShowPassword((value) => !value)}
+        />
+        <AuthButton title="Login" loading={loading} onPress={submit} />
+        <Pressable disabled={loading} onPress={submit} style={styles.demoButton}>
+          <Text style={styles.demoText}>Use demo account</Text>
+        </Pressable>
+      </AuthCard>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
-    alignItems: "center",
-    backgroundColor: colors.background,
-    justifyContent: "center",
-    minHeight: "100%",
-    padding: 20
-  },
-  wrap: {
-    alignItems: "center",
-    gap: 16,
-    width: "100%"
-  },
-  shell: {
-    alignItems: "stretch",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 22,
-    justifyContent: "center",
-    width: "100%"
-  },
-  storyPanel: {
-    backgroundColor: "#090E18",
-    borderColor: "rgba(255, 255, 255, 0.08)",
-    borderRadius: 18,
-    borderWidth: 1,
-    flexBasis: 360,
-    flexGrow: 1,
-    justifyContent: "center",
-    maxWidth: 520,
-    minHeight: 360,
-    padding: 30
-  },
-  brand: {
-    color: colors.cyan,
-    fontSize: 14,
-    fontWeight: "900",
-    letterSpacing: 1,
-    marginBottom: 16
-  },
-  storyTitle: {
-    color: colors.ink,
-    fontSize: 38,
-    fontWeight: "900",
-    lineHeight: 44,
-    maxWidth: 360
-  },
-  storyCopy: {
-    color: colors.muted,
-    fontSize: 16,
-    lineHeight: 24,
-    marginTop: 16,
-    maxWidth: 410
-  },
   switchText: {
     color: colors.muted
   },
   link: {
     color: colors.cyan,
+    fontWeight: "900"
+  },
+  demoButton: {
+    alignItems: "center",
+    borderColor: "rgba(148, 163, 184, 0.16)",
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 12
+  },
+  demoText: {
+    color: colors.muted,
+    fontSize: 13,
     fontWeight: "900"
   }
 });
