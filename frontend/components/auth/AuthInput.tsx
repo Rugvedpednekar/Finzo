@@ -31,7 +31,8 @@ export function AuthInput({ label, showToggle, secure, onToggleSecure, style, ..
 
 const styles = StyleSheet.create({
   group: {
-    gap: 7
+    gap: 6,
+    width: "100%"
   },
   label: {
     color: colors.muted,
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: colors.ink,
     fontSize: 15,
-    minHeight: 48,
+    minHeight: 50,
     paddingHorizontal: 13,
     paddingVertical: 11
   },

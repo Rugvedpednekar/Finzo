@@ -68,11 +68,11 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "rgba(15, 23, 42, 0.94)",
     borderColor: "rgba(59, 130, 246, 0.22)",
-    borderRadius: 18,
+    borderRadius: 22,
     borderWidth: 1,
-    gap: 12,
-    maxWidth: 430,
-    padding: 22,
+    gap: 11,
+    maxWidth: 440,
+    padding: 24,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 20 },
     shadowOpacity: 0.32,
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.ink,
-    fontSize: 25,
+    fontSize: 24,
     fontWeight: "900"
   },
   subtitle: {
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     lineHeight: 21
   },
   body: {
-    gap: 12,
+    gap: 11,
     marginTop: 4
   },
   footer: {
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.primary,
     borderRadius: 12,
-    minHeight: 48,
+    minHeight: 50,
     justifyContent: "center",
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 0 },

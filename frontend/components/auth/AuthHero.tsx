@@ -33,13 +33,13 @@ const styles = StyleSheet.create({
     borderColor: "rgba(59, 130, 246, 0.18)",
     borderRadius: 22,
     borderWidth: 1,
-    flexBasis: 420,
-    flexGrow: 1,
-    gap: 18,
-    maxWidth: 560,
-    minHeight: 520,
+    flex: 1,
+    gap: 16,
+    height: 540,
+    maxWidth: 620,
+    minWidth: 0,
     overflow: "hidden",
-    padding: 28,
+    padding: 30,
     position: "relative"
   },
   glow: {
@@ -59,9 +59,9 @@ const styles = StyleSheet.create({
   },
   headline: {
     color: colors.ink,
-    fontSize: 38,
+    fontSize: 36,
     fontWeight: "900",
-    lineHeight: 44,
+    lineHeight: 42,
     maxWidth: 430
   },
   copy: {
