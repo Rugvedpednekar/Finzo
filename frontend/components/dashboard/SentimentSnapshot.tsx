@@ -1,22 +1,37 @@
-import { StyleSheet, Text, View } from "react-native";
+import { DimensionValue, StyleSheet, Text, View } from "react-native";
 import { colors } from "@/constants/config";
+import type { SentimentSnapshotData } from "@/types";
 
-export function SentimentSnapshot() {
+type Props = {
+  sentiment?: SentimentSnapshotData | null;
+};
+
+const fallback: SentimentSnapshotData = {
+  status: "Bullish",
+  score: 0.72,
+  updated_at: "",
+  explanation: "Recent market text is leaning positive, with growth and earnings language outweighing risk terms."
+};
+
+export function SentimentSnapshot({ sentiment = fallback }: Props) {
+  const data = sentiment || fallback;
+  const width = `${Math.min(100, Math.max(0, ((data.score + 1) / 2) * 100))}%` as DimensionValue;
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
         <Text style={styles.title}>AI Sentiment Snapshot</Text>
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>Bullish</Text>
+          <Text style={styles.badgeText}>{data.status}</Text>
         </View>
       </View>
       <View style={styles.scoreRow}>
-        <Text style={styles.score}>+0.72</Text>
+        <Text style={styles.score}>{data.score >= 0 ? "+" : ""}{data.score.toFixed(2)}</Text>
         <View style={styles.track}>
-          <View style={styles.fill} />
+          <View style={[styles.fill, { width }]} />
         </View>
       </View>
-      <Text style={styles.explanation}>Recent market text is leaning positive, with growth and earnings language outweighing risk terms.</Text>
+      <Text style={styles.explanation}>{data.explanation}</Text>
     </View>
   );
 }

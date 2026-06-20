@@ -1,5 +1,21 @@
 import { API_URL } from "@/constants/config";
-import type { AuthResponse, Backtest, CompareResult, Dashboard, Report, SentimentResult, StrategyType } from "@/types";
+import type {
+  AllocationPlan,
+  AuthResponse,
+  Backtest,
+  CompareResult,
+  Dashboard,
+  LiveQuote,
+  MarketHistory,
+  PortfolioSummary,
+  RecentPaperTrade,
+  Report,
+  SentimentResult,
+  SentimentSnapshotData,
+  StrategyPerformance,
+  StrategyType,
+  TradeTimelineItem
+} from "@/types";
 
 const TOKEN_KEY = "finzo.auth.token";
 let memoryToken: string | null = null;
@@ -93,6 +109,22 @@ export const api = {
   me: () => request<AuthResponse>("/auth/me"),
   logout: () => tokenStore.clear(),
   dashboard: () => request<Dashboard>("/dashboard"),
+  portfolioSummary: () => request<PortfolioSummary>("/portfolio/summary"),
+  portfolioAllocation: () => request<AllocationPlan>("/portfolio/allocation"),
+  strategyPerformance: () => request<StrategyPerformance>("/strategies/performance"),
+  tradeTimeline: () => request<{ timeline: TradeTimelineItem[] }>("/trades/timeline"),
+  recentTrades: () => request<{ trades: RecentPaperTrade[] }>("/trades/recent"),
+  marketQuote: (symbol: string) => request<LiveQuote>(`/market/quote/${symbol}`),
+  marketHistory: (symbol: string, range = "1M") => request<MarketHistory>(`/market/history/${symbol}?range=${range}`),
+  liveDashboard: () =>
+    request<{
+      portfolio: PortfolioSummary;
+      allocation: Omit<AllocationPlan, "positions">;
+      strategy_performance: StrategyPerformance;
+      trade_timeline: TradeTimelineItem[];
+      sentiment: SentimentSnapshotData;
+      disclaimer: string;
+    }>("/dashboard/live"),
   runBacktest: (payload: BacktestPayload) =>
     request<Backtest>("/backtests/run", { method: "POST", body: JSON.stringify(payload) }),
   backtests: () => request<Backtest[]>("/backtests"),

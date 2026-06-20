@@ -1,53 +1,74 @@
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { AllocationCard } from "@/components/dashboard/AllocationCard";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
-import { PortfolioChart } from "@/components/dashboard/PortfolioChart";
-import { RecentTests } from "@/components/dashboard/RecentTests";
+import { MarketWatchPanel } from "@/components/dashboard/MarketWatchPanel";
+import { PortfolioSummaryCard } from "@/components/dashboard/PortfolioSummaryCard";
+import { PriceChart } from "@/components/dashboard/PriceChart";
+import { RecentTradesCard } from "@/components/dashboard/RecentTradesCard";
 import { SentimentSnapshot } from "@/components/dashboard/SentimentSnapshot";
 import { SummaryCard } from "@/components/dashboard/SummaryCard";
-import { WatchlistCard } from "@/components/dashboard/WatchlistCard";
+import { StrategyPerformanceCard } from "@/components/dashboard/StrategyPerformanceCard";
+import { TradeTimeline } from "@/components/dashboard/TradeTimeline";
 import { AppShell } from "@/components/layout/AppShell";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { disclaimer } from "@/constants/config";
 import { api } from "@/services/api";
-import type { Dashboard } from "@/types";
+import type {
+  AllocationPlan,
+  Dashboard,
+  LiveQuote,
+  MarketHistory,
+  PortfolioSummary,
+  RecentPaperTrade,
+  SentimentSnapshotData,
+  StrategyPerformance,
+  TradeTimelineItem
+} from "@/types";
 
-const equityData = [
-  { label: "Jan", value: 10000 },
-  { label: "Feb", value: 10500 },
-  { label: "Mar", value: 10300 },
-  { label: "Apr", value: 11200 },
-  { label: "May", value: 11800 },
-  { label: "Jun", value: 12100 },
-  { label: "Jul", value: 13400 }
-];
-
-const watchlist = [
-  { symbol: "AAPL", price: "173.50", change: "+1.2%", direction: "up" as const },
-  { symbol: "MSFT", price: "338.11", change: "+0.8%", direction: "up" as const },
-  { symbol: "NVDA", price: "450.25", change: "-2.1%", direction: "down" as const },
-  { symbol: "TSLA", price: "215.40", change: "+3.4%", direction: "up" as const }
-];
-
-const recentTests = [
-  { strategy: "SMA Crossover", symbol: "AAPL", date: "Oct 12", returnValue: "+12.4%" },
-  { strategy: "RSI Reversion", symbol: "TSLA", date: "Oct 11", returnValue: "-3.2%" },
-  { strategy: "MACD Trend", symbol: "NVDA", date: "Oct 10", returnValue: "+28.1%" },
-  { strategy: "Sentiment Pulse", symbol: "MSFT", date: "Oct 09", returnValue: "+8.9%" }
-];
+const watchSymbols = ["AAPL", "MSFT", "NVDA", "TSLA", "SPY", "QQQ"];
 
 export default function DashboardScreen() {
   const [data, setData] = useState<Dashboard | null>(null);
+  const [summary, setSummary] = useState<PortfolioSummary | null>(null);
+  const [allocation, setAllocation] = useState<AllocationPlan | null>(null);
+  const [quotes, setQuotes] = useState<LiveQuote[]>([]);
+  const [history, setHistory] = useState<MarketHistory | null>(null);
+  const [range, setRange] = useState("1M");
+  const [strategy, setStrategy] = useState<StrategyPerformance | null>(null);
+  const [timeline, setTimeline] = useState<TradeTimelineItem[]>([]);
+  const [recentTrades, setRecentTrades] = useState<RecentPaperTrade[]>([]);
+  const [sentiment, setSentiment] = useState<SentimentSnapshotData | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.dashboard()
-      .then(setData)
+    Promise.all([
+      api.dashboard(),
+      api.portfolioSummary(),
+      api.portfolioAllocation(),
+      Promise.all(watchSymbols.map((symbol) => api.marketQuote(symbol))),
+      api.marketHistory("AAPL", range),
+      api.strategyPerformance(),
+      api.tradeTimeline(),
+      api.recentTrades(),
+      api.liveDashboard()
+    ])
+      .then(([dashboard, portfolioSummary, allocationPlan, marketQuotes, marketHistory, strategyPerformance, tradeTimeline, trades, live]) => {
+        setData(dashboard);
+        setSummary(portfolioSummary);
+        setAllocation(allocationPlan);
+        setQuotes(marketQuotes);
+        setHistory(marketHistory);
+        setStrategy(strategyPerformance);
+        setTimeline(tradeTimeline.timeline);
+        setRecentTrades(trades.trades);
+        setSentiment(live.sentiment);
+      })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [range]);
 
   return (
     <ProtectedRoute>
@@ -63,12 +84,15 @@ export default function DashboardScreen() {
               </View>
             ) : null}
             {!loading && !error && data ? (
-              <View style={styles.summaryGrid}>
-                <SummaryCard label="Total Backtests" value={String(data.total_backtests)} helper="Saved paper simulations" tone="blue" />
-                <SummaryCard label="Best Return" value={`${data.best_return.toFixed(2)}%`} helper="Highest simulated result" tone="green" />
-                <SummaryCard label="Win Rate" value={`${data.average_win_rate.toFixed(2)}%`} helper="Average across strategies" tone="cyan" />
-                <SummaryCard label="Recent Strategy" value={data.recent_strategy || "No strategy yet"} helper="Latest paper run" tone="purple" />
-              </View>
+              <>
+                <PortfolioSummaryCard summary={summary} />
+                <View style={styles.summaryGrid}>
+                  <SummaryCard label="Total Backtests" value={String(data.total_backtests)} helper="Saved paper simulations" tone="blue" />
+                  <SummaryCard label="Best Return" value={`${data.best_return.toFixed(2)}%`} helper="Highest simulated result" tone="green" />
+                  <SummaryCard label="Win Rate" value={`${data.average_win_rate.toFixed(2)}%`} helper="Average across strategies" tone="cyan" />
+                  <SummaryCard label="Recent Strategy" value={data.recent_strategy || "No strategy yet"} helper="Latest paper run" tone="purple" />
+                </View>
+              </>
             ) : null}
             {!loading && !error && !data ? (
               <View style={styles.emptyCard}>
@@ -76,19 +100,19 @@ export default function DashboardScreen() {
                 <Text style={styles.emptyText}>Run your first backtest to populate performance stats and reports.</Text>
               </View>
             ) : null}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Watchlist</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.watchlist}>
-                {watchlist.map((item) => (
-                  <WatchlistCard key={item.symbol} {...item} />
-                ))}
-              </ScrollView>
+            {quotes.length ? <MarketWatchPanel quotes={quotes} /> : null}
+            <View style={styles.mainGrid}>
+              <AllocationCard allocation={allocation} />
+              <SentimentSnapshot sentiment={sentiment} />
             </View>
             <View style={styles.analyticsRow}>
-              <PortfolioChart data={equityData} />
-              <RecentTests tests={recentTests} />
+              {history ? <PriceChart symbol="AAPL" range={range} candles={history.candles} onRangeChange={setRange} /> : null}
+              <StrategyPerformanceCard performance={strategy} />
             </View>
-            <SentimentSnapshot />
+            <View style={styles.analyticsRow}>
+              <TradeTimeline items={timeline} />
+              <RecentTradesCard trades={recentTrades} />
+            </View>
             <Text style={styles.disclaimer}>{disclaimer}</Text>
           </View>
         </AppShell>
@@ -107,17 +131,10 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 12
   },
-  section: {
-    gap: 12
-  },
-  sectionTitle: {
-    color: "#F8FAFC",
-    fontSize: 18,
-    fontWeight: "900"
-  },
-  watchlist: {
-    gap: 12,
-    paddingRight: 4
+  mainGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16
   },
   analyticsRow: {
     flexDirection: "row",

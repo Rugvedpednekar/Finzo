@@ -89,3 +89,53 @@ class Report(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     backtest: Mapped[Backtest] = relationship(back_populates="reports")
+
+
+class PortfolioAllocation(Base):
+    __tablename__ = "portfolio_allocations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    bucket: Mapped[str] = mapped_column(String(80))
+    percent: Mapped[float] = mapped_column(Float)
+    value: Mapped[float] = mapped_column(Float)
+    rationale: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class PortfolioPosition(Base):
+    __tablename__ = "portfolio_positions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    symbol: Mapped[str] = mapped_column(String(20), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    weight: Mapped[float] = mapped_column(Float)
+    value: Mapped[float] = mapped_column(Float)
+    change: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class PortfolioActivity(Base):
+    __tablename__ = "portfolio_activity"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    timestamp: Mapped[str] = mapped_column(String(40))
+    tag: Mapped[str] = mapped_column(String(20))
+    symbol: Mapped[str] = mapped_column(String(20))
+    title: Mapped[str] = mapped_column(String(180))
+    explanation: Mapped[str] = mapped_column(Text)
+    impact: Mapped[str] = mapped_column(String(160))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class MarketSnapshot(Base):
+    __tablename__ = "market_snapshots"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    symbol: Mapped[str] = mapped_column(String(20), index=True)
+    price: Mapped[float] = mapped_column(Float)
+    percent_change: Mapped[float] = mapped_column(Float)
+    source: Mapped[str] = mapped_column(String(40))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

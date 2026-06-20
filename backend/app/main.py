@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, SessionLocal, engine
 from app.migrations import run_schema_migrations
-from app.routes import auth, backtests, compare, dashboard, market, reports, sentiment
+from app.routes import auth, backtests, compare, dashboard, market, portfolio, reports, sentiment, strategies, trades
 from app.seed import seed_data
 
 # Create tables before starting the app
@@ -39,6 +39,9 @@ app.include_router(sentiment.router)
 app.include_router(compare.router)
 app.include_router(reports.router)
 app.include_router(market.router)
+app.include_router(portfolio.router)
+app.include_router(strategies.router)
+app.include_router(trades.router)
 
 
 @app.get("/health")

@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from math import sin
+import os
 
 from app.services.finnhub_live import fetch_live_quote
 from app.services.yahoo_data import fetch_historical_candles
@@ -40,6 +41,8 @@ def generated_mock_historical_candles(symbol: str, start_date: str, end_date: st
 
 
 def get_historical_candles(symbol: str, start_date: str, end_date: str) -> list[dict[str, float | int | str]]:
+    if os.getenv("USE_MOCK_MARKET_DATA", "").lower() == "true":
+        return generated_mock_historical_candles(symbol, start_date, end_date)
     try:
         return fetch_historical_candles(symbol, start_date, end_date)
     except Exception:
@@ -47,4 +50,8 @@ def get_historical_candles(symbol: str, start_date: str, end_date: str) -> list[
 
 
 def get_live_quote(symbol: str) -> dict[str, float | int | str]:
+    if os.getenv("USE_MOCK_MARKET_DATA", "").lower() == "true":
+        from app.services.finnhub_live import mock_live_quote
+
+        return mock_live_quote(symbol)
     return fetch_live_quote(symbol)

@@ -6,6 +6,8 @@ from app.database import get_db
 from app.models import Backtest, User
 from app.schemas import DashboardResponse
 from app.services.auth import get_current_user
+from app.services.portfolio_allocator import get_allocation_plan, get_portfolio_summary
+from app.services.trade_decision_engine import get_market_sentiment_snapshot, get_strategy_performance, get_trade_timeline
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -22,3 +24,15 @@ def get_dashboard(db: Session = Depends(get_db), _: User = Depends(get_current_u
         average_win_rate=round(average_win_rate, 2),
         recent_strategy=recent.strategy_type if recent else "No strategy yet",
     )
+
+
+@router.get("/live")
+def get_live_dashboard(_: User = Depends(get_current_user)) -> dict:
+    return {
+        "portfolio": get_portfolio_summary(),
+        "allocation": get_allocation_plan(),
+        "strategy_performance": get_strategy_performance(),
+        "trade_timeline": get_trade_timeline(),
+        "sentiment": get_market_sentiment_snapshot(),
+        "disclaimer": "Finzo is for educational paper trading only and does not provide financial advice.",
+    }
