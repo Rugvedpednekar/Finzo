@@ -36,7 +36,7 @@ export function TopBar({ user }: Props) {
       <View style={styles.right}>
         <View style={styles.status}>
           <View style={styles.statusDot} />
-          <Text style={styles.statusText}>Markets open</Text>
+          <Text style={styles.statusText}>{isMobile ? "Open" : "Markets open"}</Text>
         </View>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{user.name.slice(0, 1).toUpperCase()}</Text>
