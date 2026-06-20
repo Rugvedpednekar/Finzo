@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { AllocationCard } from "@/components/dashboard/AllocationCard";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { MarketWatchPanel } from "@/components/dashboard/MarketWatchPanel";
@@ -7,7 +7,6 @@ import { PortfolioSummaryCard } from "@/components/dashboard/PortfolioSummaryCar
 import { PriceChart } from "@/components/dashboard/PriceChart";
 import { RecentTradesCard } from "@/components/dashboard/RecentTradesCard";
 import { SentimentSnapshot } from "@/components/dashboard/SentimentSnapshot";
-import { SummaryCard } from "@/components/dashboard/SummaryCard";
 import { StrategyPerformanceCard } from "@/components/dashboard/StrategyPerformanceCard";
 import { TradeTimeline } from "@/components/dashboard/TradeTimeline";
 import { AppShell } from "@/components/layout/AppShell";
@@ -30,6 +29,11 @@ import type {
 const watchSymbols = ["AAPL", "MSFT", "NVDA", "TSLA", "SPY", "QQQ"];
 
 export default function DashboardScreen() {
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+  const isTablet = width >= 768 && width < 1024;
+  const isDesktop = width >= 1024;
+
   const [data, setData] = useState<Dashboard | null>(null);
   const [summary, setSummary] = useState<PortfolioSummary | null>(null);
   const [allocation, setAllocation] = useState<AllocationPlan | null>(null);
@@ -44,6 +48,9 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
+    setError("");
+
     Promise.all([
       api.dashboard(),
       api.portfolioSummary(),
@@ -55,17 +62,29 @@ export default function DashboardScreen() {
       api.recentTrades(),
       api.liveDashboard()
     ])
-      .then(([dashboard, portfolioSummary, allocationPlan, marketQuotes, marketHistory, strategyPerformance, tradeTimeline, trades, live]) => {
-        setData(dashboard);
-        setSummary(portfolioSummary);
-        setAllocation(allocationPlan);
-        setQuotes(marketQuotes);
-        setHistory(marketHistory);
-        setStrategy(strategyPerformance);
-        setTimeline(tradeTimeline.timeline);
-        setRecentTrades(trades.trades);
-        setSentiment(live.sentiment);
-      })
+      .then(
+        ([
+          dashboard,
+          portfolioSummary,
+          allocationPlan,
+          marketQuotes,
+          marketHistory,
+          strategyPerformance,
+          tradeTimeline,
+          trades,
+          live
+        ]) => {
+          setData(dashboard);
+          setSummary(portfolioSummary);
+          setAllocation(allocationPlan);
+          setQuotes(marketQuotes);
+          setHistory(marketHistory);
+          setStrategy(strategyPerformance);
+          setTimeline(tradeTimeline.timeline);
+          setRecentTrades(trades.trades);
+          setSentiment(live.sentiment);
+        }
+      )
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
   }, [range]);
@@ -76,44 +95,65 @@ export default function DashboardScreen() {
         <AppShell user={user}>
           <View style={styles.page}>
             <DashboardHero user={user} pulse="Bullish" />
+
             {loading ? <LoadingSkeleton rows={5} /> : null}
+
             {error ? (
               <View style={styles.errorCard}>
                 <Text style={styles.errorTitle}>Dashboard data is unavailable</Text>
                 <Text style={styles.errorText}>{error}</Text>
               </View>
             ) : null}
+
             {!loading && !error && data ? (
               <>
                 <PortfolioSummaryCard summary={summary} />
-                <View style={styles.summaryGrid}>
-                  <SummaryCard label="Total Backtests" value={String(data.total_backtests)} helper="Saved paper simulations" tone="blue" />
-                  <SummaryCard label="Best Return" value={`${data.best_return.toFixed(2)}%`} helper="Highest simulated result" tone="green" />
-                  <SummaryCard label="Win Rate" value={`${data.average_win_rate.toFixed(2)}%`} helper="Average across strategies" tone="cyan" />
-                  <SummaryCard label="Recent Strategy" value={data.recent_strategy || "No strategy yet"} helper="Latest paper run" tone="purple" />
+
+                <View style={[styles.tradingGrid, !isDesktop && styles.stackedGrid]}>
+                  <View style={[styles.chartColumn, !isDesktop && styles.fullWidth]}>
+                    {history ? (
+                      <PriceChart
+                        symbol="AAPL"
+                        range={range}
+                        candles={history.candles}
+                        onRangeChange={setRange}
+                      />
+                    ) : null}
+                  </View>
+
+                  <View style={[styles.sideColumn, !isDesktop && styles.fullWidth]}>
+                    <AllocationCard allocation={allocation} />
+                    <SentimentSnapshot sentiment={sentiment} />
+                  </View>
+                </View>
+
+                {quotes.length ? <MarketWatchPanel quotes={quotes} /> : null}
+
+                <View style={[styles.executionGrid, !isDesktop && styles.stackedGrid]}>
+                  <View style={[styles.timelineColumn, !isDesktop && styles.fullWidth]}>
+                    <TradeTimeline items={timeline} />
+                  </View>
+
+                  <View style={[styles.performanceColumn, !isDesktop && styles.fullWidth]}>
+                    <StrategyPerformanceCard performance={strategy} />
+                    <RecentTradesCard trades={recentTrades} />
+                  </View>
                 </View>
               </>
             ) : null}
+
             {!loading && !error && !data ? (
               <View style={styles.emptyCard}>
                 <Text style={styles.emptyTitle}>No dashboard data yet</Text>
-                <Text style={styles.emptyText}>Run your first backtest to populate performance stats and reports.</Text>
+                <Text style={styles.emptyText}>
+                  Run your first backtest to populate performance stats and reports.
+                </Text>
               </View>
             ) : null}
-            {quotes.length ? <MarketWatchPanel quotes={quotes} /> : null}
-            <View style={styles.mainGrid}>
-              <AllocationCard allocation={allocation} />
-              <SentimentSnapshot sentiment={sentiment} />
-            </View>
-            <View style={styles.analyticsRow}>
-              {history ? <PriceChart symbol="AAPL" range={range} candles={history.candles} onRangeChange={setRange} /> : null}
-              <StrategyPerformanceCard performance={strategy} />
-            </View>
-            <View style={styles.analyticsRow}>
-              <TradeTimeline items={timeline} />
-              <RecentTradesCard trades={recentTrades} />
-            </View>
-            <Text style={styles.disclaimer}>{disclaimer}</Text>
+
+            <Text style={[styles.disclaimer, isMobile && styles.mobileDisclaimer]}>
+              {disclaimer}
+            </Text>
           </View>
         </AppShell>
       )}
@@ -123,24 +163,50 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   page: {
-    gap: 16,
+    gap: 18,
     width: "100%"
   },
-  summaryGrid: {
+
+  tradingGrid: {
+    alignItems: "stretch",
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12
+    gap: 18,
+    width: "100%"
   },
-  mainGrid: {
+  executionGrid: {
+    alignItems: "stretch",
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16
+    gap: 18,
+    width: "100%"
   },
-  analyticsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16
+  stackedGrid: {
+    flexDirection: "column"
   },
+
+  chartColumn: {
+    flex: 1.75,
+    minWidth: 0
+  },
+  sideColumn: {
+    flex: 1,
+    gap: 18,
+    minWidth: 320
+  },
+  timelineColumn: {
+    flex: 1.35,
+    minWidth: 0
+  },
+  performanceColumn: {
+    flex: 1,
+    gap: 18,
+    minWidth: 320
+  },
+  fullWidth: {
+    flex: undefined,
+    minWidth: 0,
+    width: "100%"
+  },
+
   errorCard: {
     backgroundColor: "rgba(244, 63, 94, 0.1)",
     borderColor: "rgba(244, 63, 94, 0.26)",
@@ -160,6 +226,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     lineHeight: 19
   },
+
   emptyCard: {
     backgroundColor: "#0F172A",
     borderColor: "rgba(34, 211, 238, 0.18)",
@@ -178,10 +245,16 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginTop: 5
   },
+
   disclaimer: {
     color: "#64748B",
     fontSize: 12,
     lineHeight: 18,
+    paddingBottom: 4,
     textAlign: "center"
+  },
+  mobileDisclaimer: {
+    fontSize: 11,
+    paddingHorizontal: 8
   }
 });
