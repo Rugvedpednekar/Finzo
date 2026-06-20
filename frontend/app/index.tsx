@@ -1,233 +1,473 @@
 import { router } from "expo-router";
-import { useEffect } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import { AuthFeatureList } from "@/components/auth/AuthFeatureList";
-import { MarketTickerStrip } from "@/components/auth/MarketTickerStrip";
-import { colors } from "@/constants/config";
-import { tokenStore } from "@/services/api";
+import {
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View
+} from "react-native";
+import { colors, disclaimer } from "@/constants/config";
 
-export default function HomeScreen() {
+const tickers = [
+  { symbol: "AAPL", price: "$173.50", change: "+1.2%", positive: true },
+  { symbol: "MSFT", price: "$338.11", change: "+0.8%", positive: true },
+  { symbol: "NVDA", price: "$450.25", change: "-2.1%", positive: false },
+  { symbol: "TSLA", price: "$215.40", change: "+3.4%", positive: true }
+];
+
+const features = [
+  "JWT protected dashboard",
+  "Backtesting engine",
+  "AI sentiment analysis",
+  "Aurora PostgreSQL storage"
+];
+
+export default function LandingScreen() {
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
-
-  useEffect(() => {
-    if (tokenStore.get()) {
-      router.replace("/dashboard");
-    }
-  }, []);
+  const isTablet = width >= 768 && width < 1024;
 
   return (
-    <ScrollView contentContainerStyle={[styles.page, isMobile && styles.mobilePage]}>
-      <View style={styles.glowOne} />
-      <View style={styles.glowTwo} />
-      <View style={styles.navbar}>
-        <Text style={styles.logo}>FINZO</Text>
-        <View style={styles.navActions}>
-          <Pressable onPress={() => router.push("/login")} style={styles.navGhost}>
-            <Text style={styles.navGhostText}>Login</Text>
-          </Pressable>
-          <Pressable onPress={() => router.push("/register")} style={styles.navButton}>
-            <Text style={styles.navButtonText}>Register</Text>
-          </Pressable>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={[
+          styles.content,
+          isMobile && styles.mobileContent
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.backgroundOrbTop} pointerEvents="none" />
+        <View style={styles.backgroundOrbBottom} pointerEvents="none" />
+
+        <View style={styles.container}>
+          <View style={styles.topbar}>
+            <Text style={styles.logo}>FINZO</Text>
+
+            <View style={styles.topbarActions}>
+              <Pressable
+                onPress={() => router.push("/login")}
+                style={({ pressed }) => [
+                  styles.topbarGhostButton,
+                  pressed && styles.pressed
+                ]}
+              >
+                <Text style={styles.topbarGhostText}>Login</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => router.push("/register")}
+                style={({ pressed }) => [
+                  styles.topbarPrimaryButton,
+                  pressed && styles.pressed
+                ]}
+              >
+                <Text style={styles.topbarPrimaryText}>Register</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <View style={[styles.hero, isMobile && styles.heroMobile]}>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>AI-powered paper trading</Text>
+            </View>
+
+            <Text
+              style={[
+                styles.heading,
+                isTablet && styles.headingTablet,
+                isMobile && styles.headingMobile
+              ]}
+            >
+              Trade ideas. {"\n"}
+              Not real money.
+            </Text>
+
+            <Text
+              style={[
+                styles.subtitle,
+                isMobile && styles.subtitleMobile
+              ]}
+            >
+              Backtest technical strategies, analyze financial sentiment, and
+              track paper portfolios in a secure AI-assisted workspace.
+            </Text>
+
+            <View
+              style={[
+                styles.ctaRow,
+                isMobile && styles.ctaColumn
+              ]}
+            >
+              <Pressable
+                onPress={() => router.push("/register")}
+                style={({ pressed }) => [
+                  styles.primaryCta,
+                  isMobile && styles.fullWidthButton,
+                  pressed && styles.pressed
+                ]}
+              >
+                <Text style={styles.primaryCtaText}>Start Backtesting</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => router.push("/login")}
+                style={({ pressed }) => [
+                  styles.secondaryCta,
+                  isMobile && styles.fullWidthButton,
+                  pressed && styles.pressed
+                ]}
+              >
+                <Text style={styles.secondaryCtaText}>Login</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <View style={styles.tickerSection}>
+            <View
+              style={[
+                styles.tickerRow,
+                isMobile && styles.tickerWrap
+              ]}
+            >
+              {tickers.map((item) => (
+                <View
+                  key={item.symbol}
+                  style={[
+                    styles.tickerCard,
+                    isMobile && styles.tickerCardMobile
+                  ]}
+                >
+                  <Text style={styles.tickerSymbol}>{item.symbol}</Text>
+                  <Text style={styles.tickerPrice}>{item.price}</Text>
+                  <Text
+                    style={[
+                      styles.tickerChange,
+                      item.positive ? styles.positive : styles.negative
+                    ]}
+                  >
+                    {item.change}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          <View
+            style={[
+              styles.featuresGrid,
+              isMobile && styles.featuresGridMobile
+            ]}
+          >
+            {features.map((feature) => (
+              <View
+                key={feature}
+                style={[
+                  styles.featureCard,
+                  isMobile && styles.featureCardMobile
+                ]}
+              >
+                <View style={styles.featureDot} />
+                <Text style={styles.featureText}>{feature}</Text>
+              </View>
+            ))}
+          </View>
+
+          <Text style={styles.footerText}>{disclaimer}</Text>
         </View>
-      </View>
-      <View style={[styles.hero, isMobile && styles.mobileHero]}>
-        <Text style={styles.badge}>AI-powered paper trading</Text>
-        <Text style={[styles.headline, isMobile && styles.mobileHeadline]}>Trade ideas. Not real money.</Text>
-        <Text style={[styles.subtitle, isMobile && styles.mobileSubtitle]}>
-          Backtest technical strategies, analyze financial sentiment, and track paper portfolios in a protected sandbox.
-        </Text>
-        <View style={[styles.ctas, isMobile && styles.mobileCtas]}>
-          <Pressable onPress={() => router.push("/register")} style={[styles.primaryCta, isMobile && styles.fullButton]}>
-            <Text style={styles.primaryText}>Start Backtesting</Text>
-          </Pressable>
-          <Pressable onPress={() => router.push("/login")} style={[styles.secondaryCta, isMobile && styles.fullButton]}>
-            <Text style={styles.secondaryText}>Login</Text>
-          </Pressable>
-        </View>
-      </View>
-      <View style={styles.marketSection}>
-        <MarketTickerStrip />
-      </View>
-      <AuthFeatureList compact={isMobile} />
-      <Text style={styles.disclaimer}>Finzo is for educational paper trading only and does not provide financial advice.</Text>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  page: {
-    backgroundColor: "#020617",
-    gap: 22,
-    minHeight: "100%",
-    overflow: "hidden",
-    padding: 24,
-    position: "relative"
+  safe: {
+    flex: 1,
+    backgroundColor: "#020617"
   },
-  mobilePage: {
-    gap: 16,
-    padding: 16
+  screen: {
+    flex: 1,
+    backgroundColor: "#020617"
   },
-  navbar: {
+  content: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 28
+  },
+  mobileContent: {
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 24
+  },
+  container: {
+    alignSelf: "center",
+    maxWidth: 1280,
+    width: "100%"
+  },
+
+  backgroundOrbTop: {
+    position: "absolute",
+    right: -140,
+    top: -70,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: "rgba(47, 128, 255, 0.18)"
+  },
+  backgroundOrbBottom: {
+    position: "absolute",
+    left: -120,
+    bottom: 40,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: "rgba(41, 211, 255, 0.12)"
+  },
+
+  topbar: {
+    minHeight: 72,
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    maxWidth: 1180,
-    width: "100%",
-    zIndex: 1
+    marginBottom: 34
   },
   logo: {
     color: colors.ink,
-    fontSize: 23,
+    fontSize: 24,
     fontWeight: "900",
-    letterSpacing: 1
+    letterSpacing: 1.5
   },
-  navActions: {
+  topbarActions: {
     alignItems: "center",
     flexDirection: "row",
-    gap: 10
+    gap: 12
   },
-  navGhost: {
-    paddingHorizontal: 12,
+  topbarGhostButton: {
+    paddingHorizontal: 14,
     paddingVertical: 10
   },
-  navGhostText: {
-    color: colors.muted,
-    fontWeight: "900"
-  },
-  navButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 10
-  },
-  navButtonText: {
+  topbarGhostText: {
     color: colors.ink,
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  topbarPrimaryButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 14
+  },
+  topbarPrimaryText: {
+    color: colors.ink,
+    fontSize: 16,
     fontWeight: "900"
   },
+
   hero: {
     alignItems: "center",
-    alignSelf: "center",
-    gap: 18,
-    justifyContent: "center",
-    maxWidth: 840,
-    minHeight: 360,
-    paddingHorizontal: 12,
-    paddingTop: 48,
-    zIndex: 1
+    paddingTop: 24,
+    paddingBottom: 18
   },
-  mobileHero: {
-    minHeight: 280,
-    paddingTop: 24
-  },
-  glowOne: {
-    backgroundColor: "rgba(37, 99, 235, 0.24)",
-    borderRadius: 260,
-    height: 420,
-    position: "absolute",
-    right: -130,
-    top: -160,
-    width: 420
-  },
-  glowTwo: {
-    backgroundColor: "rgba(34, 211, 238, 0.1)",
-    borderRadius: 260,
-    bottom: -160,
-    height: 420,
-    left: -140,
-    position: "absolute",
-    width: 420
+  heroMobile: {
+    paddingTop: 10,
+    paddingBottom: 10
   },
   badge: {
-    backgroundColor: "rgba(59, 130, 246, 0.12)",
-    borderColor: "rgba(59, 130, 246, 0.3)",
+    backgroundColor: "rgba(47, 128, 255, 0.08)",
+    borderColor: "rgba(41, 211, 255, 0.22)",
     borderRadius: 999,
     borderWidth: 1,
-    color: colors.cyan,
-    fontSize: 13,
-    fontWeight: "900",
-    paddingHorizontal: 14,
-    paddingVertical: 7
+    marginBottom: 22,
+    paddingHorizontal: 18,
+    paddingVertical: 10
   },
-  headline: {
+  badgeText: {
+    color: colors.cyan,
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  heading: {
     color: colors.ink,
-    fontSize: 58,
+    fontSize: 72,
     fontWeight: "900",
-    letterSpacing: 0,
-    lineHeight: 64,
+    lineHeight: 78,
+    maxWidth: 820,
     textAlign: "center"
   },
-  mobileHeadline: {
-    fontSize: 38,
-    lineHeight: 43
+  headingTablet: {
+    fontSize: 58,
+    lineHeight: 64,
+    maxWidth: 760
+  },
+  headingMobile: {
+    fontSize: 42,
+    lineHeight: 48,
+    maxWidth: 340
   },
   subtitle: {
     color: colors.muted,
     fontSize: 18,
-    lineHeight: 27,
-    maxWidth: 680,
+    lineHeight: 30,
+    marginTop: 20,
+    maxWidth: 760,
     textAlign: "center"
   },
-  mobileSubtitle: {
-    fontSize: 15,
-    lineHeight: 22
+  subtitleMobile: {
+    fontSize: 16,
+    lineHeight: 26,
+    marginTop: 16,
+    maxWidth: 340
   },
-  ctas: {
+
+  ctaRow: {
+    alignItems: "center",
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    justifyContent: "center"
+    gap: 14,
+    marginTop: 28
   },
-  mobileCtas: {
-    width: "100%"
+  ctaColumn: {
+    alignItems: "stretch",
+    flexDirection: "column",
+    width: "100%",
+    maxWidth: 320
   },
   primaryCta: {
     alignItems: "center",
     backgroundColor: colors.primary,
-    borderRadius: 14,
-    minWidth: 190,
-    paddingHorizontal: 22,
-    paddingVertical: 15,
+    borderRadius: 16,
+    minWidth: 220,
+    paddingHorizontal: 24,
+    paddingVertical: 18,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.38,
-    shadowRadius: 20
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 22
+  },
+  primaryCtaText: {
+    color: colors.ink,
+    fontSize: 16,
+    fontWeight: "900"
   },
   secondaryCta: {
     alignItems: "center",
-    backgroundColor: "rgba(15, 23, 42, 0.86)",
-    borderColor: "rgba(148, 163, 184, 0.18)",
-    borderRadius: 14,
+    backgroundColor: "#0F172A",
+    borderColor: "rgba(148, 163, 184, 0.16)",
+    borderRadius: 16,
     borderWidth: 1,
-    minWidth: 130,
-    paddingHorizontal: 22,
-    paddingVertical: 15
+    minWidth: 170,
+    paddingHorizontal: 24,
+    paddingVertical: 18
   },
-  fullButton: {
+  secondaryCtaText: {
+    color: colors.ink,
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  fullWidthButton: {
     width: "100%"
   },
-  primaryText: {
-    color: colors.ink,
-    fontSize: 15,
-    fontWeight: "900"
+
+  tickerSection: {
+    marginTop: 34
   },
-  secondaryText: {
-    color: colors.ink,
-    fontSize: 15,
-    fontWeight: "900"
-  },
-  marketSection: {
+  tickerRow: {
+    alignItems: "stretch",
     alignSelf: "center",
-    maxWidth: 720,
-    width: "100%",
-    zIndex: 1
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 14,
+    justifyContent: "center",
+    width: "100%"
   },
-  disclaimer: {
+  tickerWrap: {
+    justifyContent: "center"
+  },
+  tickerCard: {
+    backgroundColor: "#0B1220",
+    borderColor: "rgba(148, 163, 184, 0.14)",
+    borderRadius: 18,
+    borderWidth: 1,
+    minWidth: 160,
+    paddingHorizontal: 18,
+    paddingVertical: 16
+  },
+  tickerCardMobile: {
+    minWidth: "47%"
+  },
+  tickerSymbol: {
+    color: colors.ink,
+    fontSize: 16,
+    fontWeight: "900"
+  },
+  tickerPrice: {
+    color: colors.muted,
+    fontSize: 16,
+    fontWeight: "700",
+    marginTop: 8
+  },
+  tickerChange: {
+    fontSize: 15,
+    fontWeight: "900",
+    marginTop: 8
+  },
+  positive: {
+    color: colors.green
+  },
+  negative: {
+    color: "#FB7185"
+  },
+
+  featuresGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16,
+    marginTop: 34
+  },
+  featuresGridMobile: {
+    flexDirection: "column"
+  },
+  featureCard: {
+    alignItems: "center",
+    backgroundColor: "#0B1220",
+    borderColor: "rgba(148, 163, 184, 0.14)",
+    borderRadius: 16,
+    borderWidth: 1,
+    flex: 1,
+    flexDirection: "row",
+    gap: 12,
+    minHeight: 62,
+    minWidth: 240,
+    paddingHorizontal: 18
+  },
+  featureCardMobile: {
+    width: "100%",
+    minWidth: 0
+  },
+  featureDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: colors.cyan
+  },
+  featureText: {
+    color: colors.ink,
+    fontSize: 15,
+    fontWeight: "800"
+  },
+
+  footerText: {
     color: "#64748B",
     fontSize: 12,
     lineHeight: 18,
-    marginTop: 4,
-    textAlign: "center",
-    zIndex: 1
+    marginTop: 28,
+    textAlign: "center"
+  },
+
+  pressed: {
+    opacity: 0.82,
+    transform: [{ scale: 0.99 }]
   }
 });
