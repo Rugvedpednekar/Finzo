@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { AppLayout } from "@/components/AppLayout";
-import { Disclaimer } from "@/components/Disclaimer";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { DashboardHero } from "@/components/dashboard/DashboardHero";
+import { PortfolioChart } from "@/components/dashboard/PortfolioChart";
+import { RecentTests } from "@/components/dashboard/RecentTests";
+import { SentimentSnapshot } from "@/components/dashboard/SentimentSnapshot";
+import { SummaryCard } from "@/components/dashboard/SummaryCard";
+import { WatchlistCard } from "@/components/dashboard/WatchlistCard";
+import { AppShell } from "@/components/layout/AppShell";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
-import { MiniAreaChart } from "@/components/MiniAreaChart";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { StatCard } from "@/components/StatCard";
-import { WatchlistCard } from "@/components/WatchlistCard";
-import { colors } from "@/constants/config";
+import { disclaimer } from "@/constants/config";
 import { api } from "@/services/api";
 import type { Dashboard } from "@/types";
 
@@ -22,17 +24,17 @@ const equityData = [
 ];
 
 const watchlist = [
-  { ticker: "AAPL", price: "173.50", change: "+1.2%", up: true },
-  { ticker: "MSFT", price: "338.11", change: "+0.8%", up: true },
-  { ticker: "NVDA", price: "450.25", change: "-2.1%", up: false },
-  { ticker: "TSLA", price: "215.40", change: "+3.4%", up: true }
+  { symbol: "AAPL", price: "173.50", change: "+1.2%", direction: "up" as const },
+  { symbol: "MSFT", price: "338.11", change: "+0.8%", direction: "up" as const },
+  { symbol: "NVDA", price: "450.25", change: "-2.1%", direction: "down" as const },
+  { symbol: "TSLA", price: "215.40", change: "+3.4%", direction: "up" as const }
 ];
 
 const recentTests = [
-  { strategy: "SMA Crossover", asset: "AAPL", date: "Oct 12", result: "+12.4%" },
-  { strategy: "RSI Reversion", asset: "TSLA", date: "Oct 11", result: "-3.2%" },
-  { strategy: "MACD Trend", asset: "NVDA", date: "Oct 10", result: "+28.1%" },
-  { strategy: "Sentiment Pulse", asset: "MSFT", date: "Oct 09", result: "+8.9%" }
+  { strategy: "SMA Crossover", symbol: "AAPL", date: "Oct 12", returnValue: "+12.4%" },
+  { strategy: "RSI Reversion", symbol: "TSLA", date: "Oct 11", returnValue: "-3.2%" },
+  { strategy: "MACD Trend", symbol: "NVDA", date: "Oct 10", returnValue: "+28.1%" },
+  { strategy: "Sentiment Pulse", symbol: "MSFT", date: "Oct 09", returnValue: "+8.9%" }
 ];
 
 export default function DashboardScreen() {
@@ -50,57 +52,46 @@ export default function DashboardScreen() {
   return (
     <ProtectedRoute>
       {(user) => (
-        <AppLayout user={user}>
+        <AppShell user={user}>
           <View style={styles.page}>
-            <View style={styles.header}>
-              <View>
-                <Text style={styles.kicker}>Protected workspace</Text>
-                <Text style={styles.title}>Dashboard</Text>
-                <Text style={styles.subtitle}>Welcome back, {user.name}. Track paper strategies, sentiment, and saved reports.</Text>
+            <DashboardHero user={user} pulse="Bullish" />
+            {loading ? <LoadingSkeleton rows={5} /> : null}
+            {error ? (
+              <View style={styles.errorCard}>
+                <Text style={styles.errorTitle}>Dashboard data is unavailable</Text>
+                <Text style={styles.errorText}>{error}</Text>
               </View>
-              <View style={styles.pulse}>
-                <Text style={styles.pulseLabel}>Market Pulse</Text>
-                <Text style={styles.pulseValue}>BULLISH</Text>
-              </View>
-            </View>
-            <Disclaimer />
-            {loading ? <LoadingSkeleton rows={4} /> : null}
-            {error ? <Text style={styles.error}>Could not load dashboard: {error}</Text> : null}
+            ) : null}
             {!loading && !error && data ? (
-              <View style={styles.grid}>
-                <StatCard label="Total Backtests" value={String(data.total_backtests)} helper="Active account" accent={colors.primary} />
-                <StatCard label="Best Return" value={`${data.best_return.toFixed(2)}%`} helper="Top simulated result" accent={colors.green} />
-                <StatCard label="Win Rate" value={`${data.average_win_rate.toFixed(2)}%`} helper="Average across tests" accent={colors.primary} />
-                <StatCard label="Recent Strategy" value={data.recent_strategy} helper="Latest run" accent="#8B5CF6" />
+              <View style={styles.summaryGrid}>
+                <SummaryCard label="Total Backtests" value={String(data.total_backtests)} helper="Saved paper simulations" tone="blue" />
+                <SummaryCard label="Best Return" value={`${data.best_return.toFixed(2)}%`} helper="Highest simulated result" tone="green" />
+                <SummaryCard label="Win Rate" value={`${data.average_win_rate.toFixed(2)}%`} helper="Average across strategies" tone="cyan" />
+                <SummaryCard label="Recent Strategy" value={data.recent_strategy || "No strategy yet"} helper="Latest paper run" tone="purple" />
+              </View>
+            ) : null}
+            {!loading && !error && !data ? (
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyTitle}>No dashboard data yet</Text>
+                <Text style={styles.emptyText}>Run your first backtest to populate performance stats and reports.</Text>
               </View>
             ) : null}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Watchlist</Text>
-              <View style={styles.watchlist}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.watchlist}>
                 {watchlist.map((item) => (
-                  <WatchlistCard key={item.ticker} {...item} />
+                  <WatchlistCard key={item.symbol} {...item} />
                 ))}
-              </View>
+              </ScrollView>
             </View>
             <View style={styles.analyticsRow}>
-              <MiniAreaChart title="Paper Portfolio Growth" data={equityData} accent={colors.primary} />
-              <View style={styles.recentCard}>
-                <Text style={styles.sectionTitle}>Recent Tests</Text>
-                <View style={styles.recentList}>
-                  {recentTests.map((test) => (
-                    <View key={`${test.strategy}-${test.date}`} style={styles.recentItem}>
-                      <View>
-                        <Text style={styles.recentStrategy}>{test.strategy}</Text>
-                        <Text style={styles.recentMeta}>{test.asset} - {test.date}</Text>
-                      </View>
-                      <Text style={[styles.recentReturn, test.result.startsWith("+") ? styles.positive : styles.negative]}>{test.result}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
+              <PortfolioChart data={equityData} />
+              <RecentTests tests={recentTests} />
             </View>
+            <SentimentSnapshot />
+            <Text style={styles.disclaimer}>{disclaimer}</Text>
           </View>
-        </AppLayout>
+        </AppShell>
       )}
     </ProtectedRoute>
   );
@@ -111,124 +102,69 @@ const styles = StyleSheet.create({
     gap: 16,
     width: "100%"
   },
-  header: {
-    backgroundColor: colors.surface,
-    borderColor: "rgba(255, 255, 255, 0.06)",
-    borderRadius: 18,
-    borderWidth: 1,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-    justifyContent: "space-between",
-    overflow: "hidden",
-    padding: 22
-  },
-  kicker: {
-    color: colors.cyan,
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  title: {
-    color: colors.ink,
-    fontSize: 30,
-    fontWeight: "900"
-  },
-  subtitle: {
-    color: colors.muted,
-    lineHeight: 21
-  },
-  grid: {
+  summaryGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12
-  },
-  pulse: {
-    backgroundColor: "rgba(139, 92, 246, 0.12)",
-    borderColor: "rgba(139, 92, 246, 0.26)",
-    borderRadius: 14,
-    borderWidth: 1,
-    minWidth: 170,
-    padding: 14
-  },
-  pulseLabel: {
-    color: colors.muted,
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase"
-  },
-  pulseValue: {
-    color: "#C4B5FD",
-    fontSize: 22,
-    fontWeight: "900",
-    marginTop: 4
   },
   section: {
     gap: 12
   },
   sectionTitle: {
-    color: colors.ink,
+    color: "#F8FAFC",
     fontSize: 18,
     fontWeight: "900"
   },
   watchlist: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12
+    gap: 12,
+    paddingRight: 4
   },
   analyticsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 16
   },
-  recentCard: {
-    backgroundColor: colors.surface,
-    borderColor: "rgba(255, 255, 255, 0.06)",
+  errorCard: {
+    backgroundColor: "rgba(244, 63, 94, 0.1)",
+    borderColor: "rgba(244, 63, 94, 0.26)",
     borderRadius: 16,
     borderWidth: 1,
-    flexBasis: 300,
-    flexGrow: 1,
-    gap: 14,
-    padding: 18
+    gap: 6,
+    padding: 16
   },
-  recentList: {
-    gap: 10
-  },
-  recentItem: {
-    alignItems: "center",
-    backgroundColor: "rgba(5, 11, 24, 0.52)",
-    borderColor: colors.border,
-    borderRadius: 12,
-    borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 12
-  },
-  recentStrategy: {
-    color: colors.ink,
-    fontSize: 14,
-    fontWeight: "800"
-  },
-  recentMeta: {
-    color: colors.muted,
-    fontSize: 12,
-    marginTop: 3
-  },
-  recentReturn: {
-    fontSize: 14,
+  errorTitle: {
+    color: "#FDA4AF",
+    fontSize: 16,
     fontWeight: "900"
   },
-  positive: {
-    color: colors.green
+  errorText: {
+    color: "#FECACA",
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 19
   },
-  negative: {
-    color: colors.danger
+  emptyCard: {
+    backgroundColor: "#0F172A",
+    borderColor: "rgba(34, 211, 238, 0.18)",
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16
   },
-  state: {
-    color: colors.muted
+  emptyTitle: {
+    color: "#F8FAFC",
+    fontSize: 16,
+    fontWeight: "900"
   },
-  error: {
-    color: colors.danger,
-    fontWeight: "700"
+  emptyText: {
+    color: "#9FB0C7",
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 5
+  },
+  disclaimer: {
+    color: "#64748B",
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: "center"
   }
 });
